@@ -1,0 +1,16 @@
+{
+  "apps": [
+    {
+      "name": "Racing gate controller",
+      "script": "tsx ./src/index.ts",
+      "watch": ["./src/"],
+      "log_file": "./logs/app.log",
+      "env_production": {
+        "NODE_ENV": "production"
+      },
+      "env_development": {
+        "NODE_ENV": "development"
+      }
+    }
+  ]
+}
