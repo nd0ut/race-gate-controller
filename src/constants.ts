@@ -15,6 +15,7 @@ export const MQTT_GATES_SWITCH_TOPIC = "gates/switch";
 
 export const TELEGRAM_ADMIN_TOKEN = env.TELEGRAM_ADMIN_TOKEN;
 export const TELEGRAM_ADMIN_ID = env.TELEGRAM_ADMIN_ID;
+export const TELEGRAM_EVENT_MANAGER_TOKEN = env.TELEGRAM_EVENT_MANAGER_TOKEN;
 
 export const BroadcastAction = {
   DISCOVER: 0,

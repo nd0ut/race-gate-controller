@@ -7,6 +7,7 @@ const EnvSchema = z.object({
   TELEGRAM_ADMIN_ID: z.string().transform((v) => parseInt(v)),
   MQTT_USERNAME: z.string(),
   MQTT_PASSWORD: z.string(),
+  TELEGRAM_EVENT_MANAGER_TOKEN: z.string(),
 });
 
 export const env = EnvSchema.parse(process.env);

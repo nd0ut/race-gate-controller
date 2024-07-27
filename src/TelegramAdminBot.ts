@@ -13,7 +13,7 @@ function formatTable(data: [title: string, value: string][]) {
   );
 }
 
-export class TelegramAdminService {
+export class TelegramAdminBot {
   bot: Bot;
   gateManager: GateManager;
   mqttService: MqttService;
@@ -38,7 +38,7 @@ export class TelegramAdminService {
     this.bot.start();
     this.setupBot();
     this.setupListeners();
-    console.log("Telegram bot started");
+    console.log("TelegramAdminBot bot started");
   }
 
   setupBot() {
@@ -197,7 +197,7 @@ export class TelegramAdminService {
 
   destroy() {
     this.bot.stop();
-    console.log("Telegram admin bot stopped");
+    console.log("TelegramAdminBot stopped");
   }
 
   log(
