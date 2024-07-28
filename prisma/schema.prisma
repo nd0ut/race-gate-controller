@@ -8,8 +8,18 @@ datasource db {
 }
 
 model User {
-  id             Int      @id @default(autoincrement())
-  createdAt      DateTime @default(now())
-  name           String   @unique
-  telegramUserId Int      @unique
+  id             Int         @id @default(autoincrement())
+  createdAt      DateTime    @default(now())
+  name           String      @unique
+  telegramUserId Int         @unique
+  events         RaceEvent[]
+}
+
+model RaceEvent {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  isActive  Boolean
+  status    String
+  name      String
+  users     User[]
 }

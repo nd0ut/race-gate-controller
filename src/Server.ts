@@ -3,8 +3,9 @@ import { DbManager } from "./DbManager.ts";
 import { GateIntersectionDetector } from "./GateIntersectionDetector.ts";
 import { GateManager } from "./GateManager.ts";
 import { MqttService } from "./MqttService.ts";
+import { RaceEventManager } from "./RaceEventManager.ts";
 import { TelegramAdminBot } from "./TelegramAdminBot.ts";
-import { TelegramEventManagerBot } from "./TelegramEventManagerBot.ts";
+import { TelegramRaceEventBot } from "./TelegramRaceEventBot.ts";
 
 export class Server {
   broadcastService: BroadcastService;
@@ -12,10 +13,12 @@ export class Server {
   gateManager: GateManager;
   telegramAdminBot: TelegramAdminBot;
   gateIntersectionDetector: GateIntersectionDetector;
-  telegramEventManagerBot: TelegramEventManagerBot;
+  telegramEventBot: TelegramRaceEventBot;
   dbManager: DbManager;
+  raceEventManager: RaceEventManager;
 
   constructor() {
+    this.raceEventManager = new RaceEventManager();
     this.dbManager = new DbManager();
     this.broadcastService = new BroadcastService();
     this.mqttService = new MqttService();
@@ -23,27 +26,29 @@ export class Server {
     this.gateIntersectionDetector = new GateIntersectionDetector(
       this.gateManager
     );
-    this.telegramAdminBot = new TelegramAdminBot({
-      gateManager: this.gateManager,
-      mqttService: this.mqttService,
-      gateIntersectionDetector: this.gateIntersectionDetector,
-    });
-    this.telegramEventManagerBot = new TelegramEventManagerBot({
-      gateManager: this.gateManager,
-      mqttService: this.mqttService,
-      gateIntersectionDetector: this.gateIntersectionDetector,
-    });
+    this.telegramAdminBot = new TelegramAdminBot(
+      this.gateManager,
+      this.mqttService,
+      this.gateIntersectionDetector,
+      this.raceEventManager
+    );
+    this.telegramEventBot = new TelegramRaceEventBot(
+      this.gateManager,
+      this.mqttService,
+      this.gateIntersectionDetector,
+      this.raceEventManager
+    );
   }
 
   start() {
     this.telegramAdminBot.connect();
-    this.telegramEventManagerBot.connect();
+    this.telegramEventBot.connect();
     this.broadcastService.listen();
     this.mqttService.connect();
   }
 
   stop() {
-    this.telegramEventManagerBot.destroy();
+    this.telegramEventBot.destroy();
     this.telegramAdminBot.destroy();
     this.broadcastService.destroy();
     this.mqttService.destroy();

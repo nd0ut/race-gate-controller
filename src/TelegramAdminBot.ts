@@ -6,6 +6,8 @@ import { Menu, MenuRange } from "@grammyjs/menu";
 import { markdownEscape } from "./util/markdownEscape.ts";
 import { markdownTable } from "markdown-table";
 import { GateIntersectionDetector } from "./GateIntersectionDetector.ts";
+import { RaceEventManager } from "./RaceEventManager.ts";
+import { prisma } from "./prisma.ts";
 
 function formatTable(data: [title: string, value: string][]) {
   return markdownEscape(
@@ -15,23 +17,14 @@ function formatTable(data: [title: string, value: string][]) {
 
 export class TelegramAdminBot {
   bot: Bot;
-  gateManager: GateManager;
-  mqttService: MqttService;
-  gateIntersectionDetector: GateIntersectionDetector;
 
-  constructor({
-    gateManager,
-    mqttService,
-    gateIntersectionDetector,
-  }: {
-    gateManager: GateManager;
-    mqttService: MqttService;
-    gateIntersectionDetector: GateIntersectionDetector;
-  }) {
+  constructor(
+    private gateManager: GateManager,
+    private mqttService: MqttService,
+    private gateIntersectionDetector: GateIntersectionDetector,
+    private raceEventManager: RaceEventManager
+  ) {
     this.bot = new Bot(TELEGRAM_ADMIN_TOKEN);
-    this.gateManager = gateManager;
-    this.mqttService = mqttService;
-    this.gateIntersectionDetector = gateIntersectionDetector;
   }
 
   connect() {
@@ -44,6 +37,8 @@ export class TelegramAdminBot {
   setupBot() {
     this.bot.api.setMyCommands([
       { command: "gates", description: "List all gates" },
+      { command: "start_race", description: "Start race" },
+      { command: "stop_active_race", description: "Stop active race" },
     ]);
 
     const gatesMenu = new Menu("gates-menu").dynamic((ctx, range) => {
@@ -138,6 +133,35 @@ export class TelegramAdminBot {
     );
 
     this.bot.use(gatesMenu);
+
+    this.bot.command("start_race", async (ctx) => {
+      const activeRace = await this.raceEventManager.getActiveRace();
+      if (activeRace) {
+        await ctx.reply(
+          `Найдена активная гонка: "${activeRace.name}". Создать новую невозможно.`
+        );
+        return;
+      }
+      const newRace = await this.raceEventManager.createNewRace();
+      await ctx.reply(`Создана новая гонка: "${newRace.name}"`);
+    });
+
+    this.bot.command("stop_active_race", async (ctx) => {
+      const activeRace = await this.raceEventManager.getActiveRace();
+      if (!activeRace) {
+        await ctx.reply(
+          `Активная гонка не найдена. Создать новую можно с помощью команды /start_race`
+        );
+        return;
+      }
+      prisma.raceEvent.update({
+        where: { id: activeRace.id },
+        data: { isActive: false },
+      });
+      await ctx.reply(
+        `Гонка "${activeRace.name}" завершена. Создать новую можно с помощью команды /start_race`
+      );
+    });
 
     this.bot.command("gates", async (ctx) => {
       const count = this.gateManager.getGatesCount();
