@@ -2,14 +2,15 @@ import {
   BROADCAST_PORT,
   BroadcastAction,
   DEVICE_ID,
-  MQTT_PASSWORD,
+  IMAGE_SERVER_PORT,
   MQTT_PORT,
   MQTT_SERVER,
-  MQTT_USERNAME,
 } from "./constants.ts";
 import dgram from "dgram";
 import { BroadcastMessage, BroadcastMessageSchema } from "./schemas.ts";
 import EventEmitter from "events";
+import { BroadcastDiscoverMessage } from "./types.ts";
+import { getLocalAddress } from "./util/getLocalAddress.ts";
 
 export class BroadcastService extends EventEmitter {
   socket: dgram.Socket;
@@ -46,12 +47,12 @@ export class BroadcastService extends EventEmitter {
 
     const { action } = message;
     if (action === BroadcastAction.DISCOVER) {
-      const response = {
+      const response: BroadcastDiscoverMessage = {
         deviceId: DEVICE_ID,
         mqttServer: MQTT_SERVER,
         mqttPort: MQTT_PORT,
-        mqttUsername: MQTT_USERNAME,
-        mqttPassword: MQTT_PASSWORD,
+        imageServer: getLocalAddress(),
+        imagePort: IMAGE_SERVER_PORT,
       };
       const json = JSON.stringify(response);
       this.socket.send(json, message.unicastPort, remote.address);

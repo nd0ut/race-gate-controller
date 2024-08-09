@@ -6,3 +6,11 @@ export type GateIntersectionEntry = {
   exitTime: Date;
   duration: number;
 };
+
+export type BroadcastDiscoverMessage = {
+  deviceId: string,
+  mqttServer: string,
+  mqttPort: number,
+  imageServer: string,
+  imagePort: number,
+}

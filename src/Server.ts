@@ -2,6 +2,7 @@ import { BroadcastService } from "./BroadcastService.ts";
 import { DbManager } from "./DbManager.ts";
 import { GateIntersectionDetector } from "./GateIntersectionDetector.ts";
 import { GateManager } from "./GateManager.ts";
+import { ImageReceiver } from "./ImageReceiver.ts";
 import { MqttService } from "./MqttService.ts";
 import { RaceEventManager } from "./RaceEventManager.ts";
 import { TelegramAdminBot } from "./TelegramAdminBot.ts";
@@ -16,6 +17,7 @@ export class Server {
   telegramEventBot: TelegramRaceEventBot;
   dbManager: DbManager;
   raceEventManager: RaceEventManager;
+  imageReceiver: ImageReceiver;
 
   constructor() {
     this.raceEventManager = new RaceEventManager();
@@ -38,13 +40,15 @@ export class Server {
       this.gateIntersectionDetector,
       this.raceEventManager
     );
+    this.imageReceiver = new ImageReceiver();
   }
 
   start() {
-    this.telegramAdminBot.connect();
-    this.telegramEventBot.connect();
+    // this.telegramAdminBot.connect();
+    // this.telegramEventBot.connect();
     this.broadcastService.listen();
     this.mqttService.connect();
+    this.imageReceiver.start();
   }
 
   stop() {
@@ -52,5 +56,6 @@ export class Server {
     this.telegramAdminBot.destroy();
     this.broadcastService.destroy();
     this.mqttService.destroy();
+    this.imageReceiver.destroy();
   }
 }

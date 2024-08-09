@@ -3,10 +3,8 @@ import { connect, MqttClient } from "mqtt";
 import {
   MQTT_GATES_STATUS_TOPIC,
   MQTT_GATES_SWITCH_TOPIC,
-  MQTT_PASSWORD,
   MQTT_PORT,
   MQTT_SERVER,
-  MQTT_USERNAME,
 } from "./constants.ts";
 import {
   MqttConnectionStatusMessage,
@@ -28,9 +26,8 @@ export class MqttService extends EventEmitter<EventMap> {
 
     const url = `mqtt://${MQTT_SERVER}:${MQTT_PORT}`;
     this.client = connect(url, {
-      username: MQTT_USERNAME,
-      password: MQTT_PASSWORD,
       manualConnect: true,
+      clientId: "GATE_CONTROLLER",
     });
 
     this.client.on("error", (err) => {
@@ -63,6 +60,10 @@ export class MqttService extends EventEmitter<EventMap> {
         this.emit("gate-circuit-status", data);
       }
     });
+
+    this.client.on('disconnect', () => {
+      console.log("MQTT client disconnected");
+    })
   }
 
   connect() {
