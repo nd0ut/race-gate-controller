@@ -62,7 +62,7 @@ const INITIAL_DEMO_RACE = {
   pilots: [] as string[],
   durationThreshold: 0,
   results: [] as Result[],
-  minLapTime: 20000
+  minLapTime: 20000,
 };
 
 let DEMO_RACE = INITIAL_DEMO_RACE;
@@ -339,68 +339,71 @@ export class TelegramDemoBot {
 
   setupListeners() {
     this.gateIntersectionDetector.on("gate-intersection", async (entry) => {
-      if (!DEMO_RACE.currentLap) {
-        return;
+      for (const id of ADMINS) {
+        await this.bot.api.sendMessage(id, JSON.stringify(entry));
       }
-      const currentLap = DEMO_RACE.currentLap;
-      const gateSettings = DEMO_RACE.gates[entry.gate.deviceId];
+      //       if (!DEMO_RACE.currentLap) {
+      //         return;
+      //       }
+      //       const currentLap = DEMO_RACE.currentLap;
+      //       const gateSettings = DEMO_RACE.gates[entry.gate.deviceId];
 
-      if (entry.duration < DEMO_RACE.durationThreshold) {
-        return;
-      }
+      //       if (entry.duration < DEMO_RACE.durationThreshold) {
+      //         return;
+      //       }
 
-      if (gateSettings.type === "start") {
-        if (currentLap.startTime || currentLap.endTime) {
-          return;
-        }
-        currentLap.startTime = gateSettings.passDetectionMode === "entry" ? entry.entryTime : entry.exitTime;
-        for (const id of ADMINS) {
-          await this.bot.api.sendMessage(
-            id,
-            `
-Пилот "${currentLap.pilot}" стартовал.
-Время старта ${formatTime(currentLap.startTime!)}`
-          );
-        }
-      }
-      if (gateSettings.type === "finish") {
-        if (!currentLap.startTime || currentLap.endTime) {
-          return;
-        }
-        const endTime = gateSettings.passDetectionMode === "entry" ? entry.entryTime : entry.exitTime;
-        const lapTime = endTime.getTime() - currentLap.startTime.getTime();
-        if (lapTime < DEMO_RACE.minLapTime) {
-          return;
-        }
+      //       if (gateSettings.type === "start") {
+      //         if (currentLap.startTime || currentLap.endTime) {
+      //           return;
+      //         }
+      //         currentLap.startTime = gateSettings.passDetectionMode === "entry" ? entry.entryTime : entry.exitTime;
+      //         for (const id of ADMINS) {
+      //           await this.bot.api.sendMessage(
+      //             id,
+      //             `
+      // Пилот "${currentLap.pilot}" стартовал.
+      // Время старта ${formatTime(currentLap.startTime!)}`
+      //           );
+      //         }
+      //       }
+      //       if (gateSettings.type === "finish") {
+      //         if (!currentLap.startTime || currentLap.endTime) {
+      //           return;
+      //         }
+      //         const endTime = gateSettings.passDetectionMode === "entry" ? entry.entryTime : entry.exitTime;
+      //         const lapTime = endTime.getTime() - currentLap.startTime.getTime();
+      //         if (lapTime < DEMO_RACE.minLapTime) {
+      //           return;
+      //         }
 
-        currentLap.endTime = gateSettings.passDetectionMode === "entry" ? entry.entryTime : entry.exitTime;
-        console.log(currentLap);
-        for (const id of ADMINS) {
-          await this.bot.api.sendMessage(
-            id,
-            `
-Пилот "${currentLap.pilot}" финишировал. 
-Время финиша: ${formatTime(currentLap.endTime)}.
-Время круга: ${formatLapTime(currentLap.endTime.getTime() - currentLap.startTime!.getTime())}
-          `
-          );
-        }
-      }
-      if (currentLap.startTime && currentLap.endTime) {
-        const lapTime = currentLap.endTime.getTime() - currentLap.startTime.getTime();
-        const result: Result = {
-          pilot: currentLap.pilot,
-          finished: true,
-          startTime: currentLap.startTime,
-          endTime: currentLap.endTime,
-          lapTime,
-        };
-        DEMO_RACE.results.push(result);
-        DEMO_RACE.currentLap = undefined;
-        for (const id of ADMINS) {
-          this.bot.api.sendMessage(id, `Результат зафиксирован.`);
-        }
-      }
+      //         currentLap.endTime = gateSettings.passDetectionMode === "entry" ? entry.entryTime : entry.exitTime;
+      //         console.log(currentLap);
+      //         for (const id of ADMINS) {
+      //           await this.bot.api.sendMessage(
+      //             id,
+      //             `
+      // Пилот "${currentLap.pilot}" финишировал.
+      // Время финиша: ${formatTime(currentLap.endTime)}.
+      // Время круга: ${formatLapTime(currentLap.endTime.getTime() - currentLap.startTime!.getTime())}
+      //           `
+      //           );
+      //         }
+      //       }
+      //       if (currentLap.startTime && currentLap.endTime) {
+      //         const lapTime = currentLap.endTime.getTime() - currentLap.startTime.getTime();
+      //         const result: Result = {
+      //           pilot: currentLap.pilot,
+      //           finished: true,
+      //           startTime: currentLap.startTime,
+      //           endTime: currentLap.endTime,
+      //           lapTime,
+      //         };
+      //         DEMO_RACE.results.push(result);
+      //         DEMO_RACE.currentLap = undefined;
+      //         for (const id of ADMINS) {
+      //           this.bot.api.sendMessage(id, `Результат зафиксирован.`);
+      //         }
+      //       }
     });
   }
 
