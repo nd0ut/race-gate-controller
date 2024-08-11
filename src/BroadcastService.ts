@@ -9,8 +9,15 @@ import {
 import dgram from "dgram";
 import { BroadcastMessage, BroadcastMessageSchema } from "./schemas.ts";
 import EventEmitter from "events";
-import { BroadcastDiscoverMessage } from "./types.ts";
 import { getLocalAddress } from "./util/getLocalAddress.ts";
+
+export type BroadcastDiscoverMessage = {
+  deviceId: string;
+  mqttServer: string;
+  mqttPort: number;
+  imageServer: string;
+  imagePort: number;
+};
 
 export class BroadcastService extends EventEmitter {
   socket: dgram.Socket;

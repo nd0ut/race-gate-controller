@@ -1,17 +1,13 @@
 import EventEmitter from "events";
 import { connect, MqttClient } from "mqtt";
-import {
-  MQTT_GATES_STATUS_TOPIC,
-  MQTT_GATES_SWITCH_TOPIC,
-  MQTT_PORT,
-  MQTT_SERVER,
-} from "./constants.ts";
+import { MQTT_GATES_STATUS_TOPIC, MQTT_GATES_SWITCH_TOPIC, MQTT_PORT, MQTT_SERVER } from "./constants.ts";
 import {
   MqttConnectionStatusMessage,
   MqttConnectionStatusMessageSchema,
   MqttCircuitStatusMessage,
   MqttCircuitStatusMessageSchema,
 } from "./schemas.ts";
+import { safeJsonParse } from "./util/safeJsonParse.ts";
 
 type EventMap = {
   "gate-connection-status": [MqttConnectionStatusMessage];
@@ -48,22 +44,39 @@ export class MqttService extends EventEmitter<EventMap> {
     });
 
     this.client.on("message", (topic, message) => {
+      const jsonMessage = safeJsonParse(message.toString());
+      if (!jsonMessage) {
+        console.log("Error parsing MQTT message as JSON");
+        console.log("Message:", message.toString());
+        return;
+      }
+      
+      console.log("Received MQTT message:", jsonMessage);
+
       if (topic === MQTT_GATES_STATUS_TOPIC) {
-        const json = JSON.parse(message.toString());
-        const data = MqttConnectionStatusMessageSchema.parse(json);
-        this.emit("gate-connection-status", data);
+        const { data, error } = MqttConnectionStatusMessageSchema.safeParse(jsonMessage);
+        if (error) {
+          console.log("Error parsing MQTT message:", error);
+          console.log("Message:", message.toString());
+        } else {
+          this.emit("gate-connection-status", data);
+        }
       }
 
       if (topic === MQTT_GATES_SWITCH_TOPIC) {
-        const json = JSON.parse(message.toString());
-        const data = MqttCircuitStatusMessageSchema.parse(json);
-        this.emit("gate-circuit-status", data);
+        const { data, error } = MqttCircuitStatusMessageSchema.safeParse(jsonMessage);
+        if (error) {
+          console.log("Error parsing MQTT message:", error);
+          console.log("Message:", message.toString());
+        } else {
+          this.emit("gate-circuit-status", data);
+        }
       }
     });
 
-    this.client.on('disconnect', () => {
+    this.client.on("disconnect", () => {
       console.log("MQTT client disconnected");
-    })
+    });
   }
 
   connect() {

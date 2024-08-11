@@ -1,6 +1,13 @@
 import { EventEmitter } from "events";
 import { GateManager } from "./GateManager.ts";
-import { GateIntersectionEntry } from "./types.ts";
+import { PlainGate } from "./Gate.ts";
+
+export type GateIntersectionEntry = {
+  gate: PlainGate;
+  entryTime: Date;
+  exitTime: Date;
+  duration: number;
+};
 
 type EventMap = {
   "gate-intersection": [GateIntersectionEntry];

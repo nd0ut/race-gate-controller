@@ -24,11 +24,7 @@ export class GateManager extends EventEmitter<EventMap> {
 
     mqttService.on("gate-circuit-status", (message) => {
       const { deviceId, circuitStatus, timestamp } = message;
-      const gate = this.#gates.get(deviceId);
-      if (!gate) {
-        console.log(`Gate ${deviceId} not found`);
-        return;
-      }
+      const gate = this.#gates.get(deviceId) ?? new Gate(deviceId);
       const prevGate = gate.plain();
       gate.setCircuitStatus(circuitStatus, timestamp);
       this.#gates.set(deviceId, gate);

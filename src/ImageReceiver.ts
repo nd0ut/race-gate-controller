@@ -57,8 +57,6 @@ export class ImageReceiver extends EventEmitter<EventMap> {
         console.log(`Image server listening on ${hostname}:${port}`);
       }
     );
-    this.server.on("error", console.log);
-    this.server.on("clientError", console.log);
   }
 
   destroy() {
