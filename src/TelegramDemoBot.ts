@@ -62,7 +62,7 @@ const INITIAL_DEMO_RACE = {
   pilots: [] as string[],
   durationThreshold: 0,
   results: [] as Result[],
-  minLapTime: 40000
+  minLapTime: 20000
 };
 
 let DEMO_RACE = INITIAL_DEMO_RACE;
