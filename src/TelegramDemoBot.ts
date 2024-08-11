@@ -81,6 +81,18 @@ if (
   try {
     const json = JSON.parse(data);
     DEMO_RACE = json;
+    DEMO_RACE.results = DEMO_RACE.results.map((result) => {
+      result.startTime = new Date(result.startTime);
+      result.endTime = result.endTime ? new Date(result.endTime) : undefined;
+      return result;
+    });
+    DEMO_RACE.currentLap = DEMO_RACE.currentLap
+      ? {
+          ...DEMO_RACE.currentLap,
+          startTime: DEMO_RACE.currentLap.startTime ? new Date(DEMO_RACE.currentLap.startTime) : undefined,
+          endTime: DEMO_RACE.currentLap.endTime ? new Date(DEMO_RACE.currentLap.endTime) : undefined,
+        }
+      : undefined;
   } catch (e) {
     console.error("Error parsing demo file");
   }
