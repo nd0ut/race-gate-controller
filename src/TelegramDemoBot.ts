@@ -62,6 +62,7 @@ const INITIAL_DEMO_RACE = {
   pilots: [] as string[],
   durationThreshold: 0,
   results: [] as Result[],
+  minLapTime: 40000
 };
 
 let DEMO_RACE = INITIAL_DEMO_RACE;
@@ -366,6 +367,12 @@ export class TelegramDemoBot {
         if (!currentLap.startTime || currentLap.endTime) {
           return;
         }
+        const endTime = gateSettings.passDetectionMode === "entry" ? entry.entryTime : entry.exitTime;
+        const lapTime = endTime.getTime() - currentLap.startTime.getTime();
+        if (lapTime < DEMO_RACE.minLapTime) {
+          return;
+        }
+
         currentLap.endTime = gateSettings.passDetectionMode === "entry" ? entry.entryTime : entry.exitTime;
         console.log(currentLap);
         for (const id of ADMINS) {
