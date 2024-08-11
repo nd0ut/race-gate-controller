@@ -41,7 +41,7 @@ type ActiveLap = {
 type Result = {
   pilot: string;
   finished: boolean;
-  startTime: Date | undefined;
+  startTime: Date;
   endTime: Date | undefined;
   lapTime: number | undefined;
 };
@@ -121,6 +121,8 @@ export class TelegramDemoBot {
     this.bot.api.setMyCommands([
       { command: "start", description: "Старт" },
       { command: "results", description: "Результаты" },
+      { command: "all_laps", description: "Все заезды" },
+      { command: "last_10_laps", description: "Последние 10 заездов" },
       { command: "add_pilot", description: "Добавить пилота в систему" },
       { command: "remove_pilot", description: "Удалить пилота из системы" },
       { command: "list_pilots", description: "Список пилотов" },
@@ -150,6 +152,43 @@ export class TelegramDemoBot {
         return [pilot, totalLaps, formatLapTime(bestLap)];
       });
       const table = [["Пилот", "Кругов", "Лучший круг"], ...result];
+      const message = formatCustomTable(table as any);
+      await ctx.reply(message, {
+        parse_mode: "MarkdownV2",
+      });
+    });
+
+    this.bot.command("all_laps", async (ctx) => {
+      const table = [
+        ["Пилот", "Старт", "Финиш", "Время круга"],
+        ...DEMO_RACE.results
+          .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
+          .map((result) => [
+            result.pilot,
+            formatTime(result.startTime),
+            result.endTime ? formatTime(result.endTime) : "Не финишировал",
+            result.lapTime ? formatLapTime(result.lapTime) : "-",
+          ]),
+      ];
+      const message = formatCustomTable(table as any);
+      await ctx.reply(message, {
+        parse_mode: "MarkdownV2",
+      });
+    });
+
+    this.bot.command("last_10_laps", async (ctx) => {
+      const table = [
+        ["Пилот", "Старт", "Финиш", "Время круга"],
+        ...DEMO_RACE.results
+          .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
+          .slice(-10)
+          .map((result) => [
+            result.pilot,
+            formatTime(result.startTime),
+            result.endTime ? formatTime(result.endTime) : "Не финишировал",
+            result.lapTime ? formatLapTime(result.lapTime) : "-",
+          ]),
+      ];
       const message = formatCustomTable(table as any);
       await ctx.reply(message, {
         parse_mode: "MarkdownV2",
